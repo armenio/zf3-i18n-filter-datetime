@@ -1,0 +1,29 @@
+{
+	"name": "armenio/zf3-i18n-filter-datetime",
+	"description": "I18n Filter DateTime for Zend Framework 3",
+	"type": "library",
+	"keywords": [
+		"date",
+		"time",
+		"datetime",
+		"filter",
+		"zf3",
+		"armenio"
+	],
+	"homepage": "https://github.com/armenio/zf3-i18n-filter-datetime",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Rafael Armênio",
+			"email": "rafael.armenio@gmail.com"
+		}
+	],
+	"require": {
+		"zendframework/zendframework": "2.*"
+	},
+	"autoload": {
+		"psr-4": {
+			"Armenio\\I18nFilterDateTime\\": "src/"
+		}
+	}
+}
