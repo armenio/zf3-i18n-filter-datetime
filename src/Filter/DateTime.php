@@ -54,13 +54,6 @@ class DateTime extends AbstractFilter
     protected $calendar;
 
     /**
-     * IntlDateFormatter instances
-     *
-     * @var array
-     */
-    protected $formatters = [];
-
-    /**
      * Sets filter options
      *
      * @param array|\Traversable $options
@@ -225,38 +218,33 @@ class DateTime extends AbstractFilter
         $locale = $this->getLocale();
         $timezone = $this->getTimezone();
         $calendar = $this->getCalendar();
-        $pattern = $this->getPattern();
 
-        $formatterId = md5($dateType . "\0" . $timeType . "\0" . $locale . "\0" . $timezone . "\0" . $calendar . "\0" . $pattern);
+        try {
+            $formatter = new IntlDateFormatter(
+                $locale,
+                $dateType,
+                $timeType,
+                $timezone,
+                $calendar
+            );
 
-        if (!isset($this->formatters[$formatterId])) {
-            try {
-                $this->formatters[$formatterId] = new IntlDateFormatter(
-                    $locale,
-                    $dateType,
-                    $timeType,
-                    $timezone,
-                    IntlDateFormatter::GREGORIAN
-                );
-
-                $this->formatters[$formatterId]->setLenient(false);
-            } catch (IntlException $intlException) {
-                // throw new FilterException\InvalidArgumentException($intlException->getMessage(), 0, $intlException);
-                return $value;
-            }
+            $formatter->setLenient(false);
+        } catch (IntlException $intlException) {
+            // throw new FilterException\InvalidArgumentException($intlException->getMessage(), 0, $intlException);
+            return $value;
         }
 
-        $this->setTimezone($this->formatters[$formatterId]->getTimezone()->getID());
-        $this->setCalendar($this->formatters[$formatterId]->getCalendar());
+        $this->setTimezone($formatter->getTimezone()->getID());
+        $this->setCalendar($formatter->getCalendar());
 
-        $timestamp = $this->formatters[$formatterId]->parse($value);
+        $timestamp = $formatter->parse($value);
 
-        $this->formatters[$formatterId]->setPattern($this->getPattern());
+        $formatter->setPattern($this->getPattern());
 
-        $formatted = $this->formatters[$formatterId]->format($timestamp);
+        $formatted = $formatter->format($timestamp);
 
-        if (intl_is_failure($this->formatters[$formatterId]->getErrorCode())) {
-            // throw new FilterException\InvalidArgumentException($this->formatters[$formatterId]->getErrorMessage());
+        if (intl_is_failure($formatter->getErrorCode())) {
+            // throw new FilterException\InvalidArgumentException($formatter->getErrorMessage());
             return $value;
         }
 
