@@ -213,9 +213,9 @@ class DateTime extends AbstractFilter
             return $value;
         }
 
+        $locale = $this->getLocale();
         $dateType = $this->getDateType();
         $timeType = $this->getTimeType();
-        $locale = $this->getLocale();
         $timezone = $this->getTimezone();
         $calendar = $this->getCalendar();
 
@@ -230,21 +230,17 @@ class DateTime extends AbstractFilter
 
             $formatter->setLenient(false);
         } catch (IntlException $intlException) {
-            // throw new FilterException\InvalidArgumentException($intlException->getMessage(), 0, $intlException);
             return $value;
         }
 
-        $this->setTimezone($formatter->getTimezone()->getID());
-        $this->setCalendar($formatter->getCalendar());
-
         $timestamp = $formatter->parse($value);
 
-        $formatter->setPattern($this->getPattern());
+        $pattern = $this->getPattern();
+        $formatter->setPattern($pattern);
 
         $formatted = $formatter->format($timestamp);
 
         if (intl_is_failure($formatter->getErrorCode())) {
-            // throw new FilterException\InvalidArgumentException($formatter->getErrorMessage());
             return $value;
         }
 
