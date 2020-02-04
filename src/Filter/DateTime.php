@@ -2,18 +2,14 @@
 /**
  * Rafael Armenio <rafael.armenio@gmail.com>
  *
- * @link http://github.com/armenio for the source repository
+ * @link http://github.com/armenio
  */
 
 namespace Armenio\I18nFilterDateTime\Filter;
 
 use IntlDateFormatter;
-use IntlException;
 use Locale;
-use Traversable;
 use Zend\Filter\AbstractFilter;
-use Zend\Filter\Exception as FilterException;
-use Zend\I18n\Exception as I18nException;
 
 /**
  * Class DateTime
@@ -54,15 +50,12 @@ class DateTime extends AbstractFilter
     protected $calendar;
 
     /**
-     * Sets filter options
-     *
-     * @param array|\Traversable $options
+     * DateTime constructor.
+     * @param array $options
      */
-    public function __construct($options = null)
+    public function __construct($options = [])
     {
-        if ($options) {
-            $this->setOptions($options);
-        }
+        $this->setOptions($options);
     }
 
     /**
@@ -166,6 +159,7 @@ class DateTime extends AbstractFilter
     public function setLocale($locale)
     {
         $this->locale = (string)$locale;
+
         return $this;
     }
 
@@ -203,9 +197,10 @@ class DateTime extends AbstractFilter
     }
 
     /**
-     * Returns a non lenient configured IntlDateFormatter
+     * Returns a date string formatted by IntlDateFormatter
      *
-     * @return IntlDateFormatter
+     * @param mixed $value
+     * @return mixed|string
      */
     public function filter($value)
     {
@@ -219,23 +214,26 @@ class DateTime extends AbstractFilter
         $timezone = $this->getTimezone();
         $calendar = $this->getCalendar();
 
-        try {
-            $formatter = new IntlDateFormatter(
-                $locale,
-                $dateType,
-                $timeType,
-                $timezone,
-                $calendar
-            );
+        $formatter = new IntlDateFormatter(
+            $locale,
+            $dateType,
+            $timeType,
+            $timezone,
+            $calendar
+        );
 
-            $formatter->setLenient(false);
-        } catch (IntlException $intlException) {
+        if (false === $formatter || intl_is_failure($formatter->getErrorCode())) {
             return $value;
         }
 
+        $formatter->setLenient(false);
+
+        // parse current date to timestamp
         $timestamp = $formatter->parse($value);
 
+        // get new pattern
         $pattern = $this->getPattern();
+
         $formatter->setPattern($pattern);
 
         $formatted = $formatter->format($timestamp);
